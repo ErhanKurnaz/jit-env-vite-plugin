@@ -1,24 +1,48 @@
 {
-  "name": "vite-plugin-jit-env",
-  "version": "1.0.0",
+  "name": "@weavedev/jit-env-vite-plugin",
+  "version": "1.0.0-beta.1",
   "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "unbuild",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "chalk": "^5.3.0",
-    "chokidar": "^3.5.3"
-  },
+  "contributors": [
+    {
+      "name": "Weave B.V.",
+      "email": "info@weave.nl"
+    },
+    {
+      "name": "Bastiaan van Graafeiland",
+      "email": "bastiaan@weave.nl"
+    },
+    {
+      "name": "Paul Gerarts",
+      "email": "dev@gerarts.nl"
+    }
+  ],
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.4.5",
     "prettier": "3.0.0",
     "typescript": "^5.1.6",
-    "vite": "^4.4.7"
+    "unbuild": "^1.2.1",
+    "vite": "^4.0.0"
+  },
+  "peerDependencies": {
+    "vite": "^4.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "chokidar": "^3.5.3"
   }
 }
