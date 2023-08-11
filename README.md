@@ -11,6 +11,14 @@ Injects .env.json files into the web application for development and adds an inj
 npm i @weavedev/jit-env-vite-plugin
 ```
 
+Make sure you have ESM enabled in your `package.json` file:
+
+```json
+{
+    "type": "module"
+}
+```
+
 ## Why‽
 
 The reason we created this plugin is that we want our staging containers to be used in production without having to rebuild them. This plugin adds a bit of code that allows you to inject a JSON env into your project with minimal effort when used in production. It also allows you to inject your local env files while developing locally.
@@ -21,26 +29,24 @@ The reason we created this plugin is that we want our staging containers to be u
 
 ```ts
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
 import jitEnv from "@weavedev/jit-env-vite-plugin";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-    plugins: [
-        react(),
-        jitEnv(
-            mode === "production"
-                ? {}
-                : {
-                    defaultEnv: './default.env.json',
-                    userEnv: './user.env.json',
-                    emitTypes: './src/myEnv.ts',
-                    emitTypesPrefix: '/* tslint:disable */',
-                },
-        ),
-    ],
+    return {
+        plugins: [
+            jitEnv(
+                mode === "production"
+                    ? {}
+                    : {
+                        defaultEnv: './default.env.json',
+                        userEnv: './user.env.json',
+                        emitTypes: './src/env.ts',
+                    },
+            ),
+        ]
+    }
 });
-
 ```
 
 ### `Options`

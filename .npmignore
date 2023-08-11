@@ -1,0 +1,13 @@
+lib/
+tsconfig.json
+tslint.json
+docs/
+node_modules/
+build.config.ts
+*.test.*
+coverage/
+.nyc_output/
+.git/
+tsconfig.tsbuildinfo
+.travis.yml
+typedoc.js
