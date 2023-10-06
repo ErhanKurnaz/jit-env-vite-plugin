@@ -273,8 +273,14 @@ export default class JitEnv {
       /\n/g,
       `\n${indentPre}`,
     )}`;
-    if (envData !== undefined) {
-      const envString = Buffer.from(JSON.stringify(envData)).toString("base64");
+    const validationResult = this.schema?.safeParse(envData);
+    if (
+      envData !== undefined &&
+      (!validationResult || validationResult.success)
+    ) {
+      const envString = Buffer.from(
+        JSON.stringify(validationResult ? validationResult.data : envData),
+      ).toString("base64");
 
       injectable = injectable.replace(/___INJECT_ENV___/, envString);
     }
