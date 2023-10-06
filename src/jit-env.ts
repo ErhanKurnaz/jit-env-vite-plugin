@@ -2,6 +2,8 @@ import chalk from "chalk";
 import chokidar from "chokidar";
 import fs from "fs";
 import path from "path";
+import { ZodTypeAny } from "zod";
+import { printNode, zodToTs } from "zod-to-ts";
 
 /**
  * Generate inject target script
@@ -73,6 +75,7 @@ export type JitEnvOptions = {
   emitTypes?: string;
   emitTypesPrefix?: string;
   emitTypesNonOptional?: boolean;
+  schema?: ZodTypeAny;
 };
 
 export default class JitEnv {
@@ -82,6 +85,7 @@ export default class JitEnv {
   emitTypes?: string = undefined;
   emitTypesPrefix?: string = undefined;
   emitTypesNonOptional?: boolean = undefined;
+  schema?: ZodTypeAny = undefined;
 
   // Raw user options (for logging)
   _defaultEnv?: string = undefined;
@@ -112,6 +116,7 @@ export default class JitEnv {
     this.emitTypes = JitEnv.fullPath(options.emitTypes);
     this.emitTypesPrefix = options.emitTypesPrefix;
     this.emitTypesNonOptional = !!this._emitTypesNonOptional;
+    this.schema = options.schema;
 
     // Ensure update hook
     if (typeof requestUpdate !== "function") {
@@ -302,23 +307,14 @@ export default class JitEnv {
       return [];
     }
 
-    if (!this.defaultEnv) {
-      return ["Could not emit types because defaultEnv is not configured."];
-    }
-
-    if (!fs.existsSync(this.defaultEnv)) {
-      return ["Could not emit types because default env could not be found."];
-    }
-
-    const data = fs.readFileSync(this.defaultEnv, "utf8");
-    let defaultEnv;
+    let declaration: string;
     try {
-      defaultEnv = JSON.parse(data, this.envToTypeReviver);
+      declaration = this.schema ? this.emitZodTypes() : this.emitEnvTypes();
     } catch (e) {
-      return ["Could not emit types because default env could not be parsed."];
+      return e instanceof Error ? [e.message] : ["Something went wrong..."];
     }
 
-    let types = typeDeclarationTemplate(this.typeObjToTypedef(defaultEnv));
+    let types = typeDeclarationTemplate(declaration);
 
     if (this.emitTypesPrefix !== undefined) {
       types = `${this.emitTypesPrefix}\n${types}`;
@@ -337,6 +333,41 @@ export default class JitEnv {
     }
 
     return [];
+  };
+
+  emitEnvTypes = (): string => {
+    if (!this.defaultEnv) {
+      throw new Error(
+        "Could not emit types because defaultEnv is not configured.",
+      );
+    }
+
+    if (!fs.existsSync(this.defaultEnv)) {
+      throw new Error(
+        "Could not emit types because default env could not be found.",
+      );
+    }
+
+    const data = fs.readFileSync(this.defaultEnv, "utf8");
+    let defaultEnv;
+    try {
+      defaultEnv = JSON.parse(data, this.envToTypeReviver);
+    } catch (e) {
+      throw new Error(
+        "Could not emit types because default env could not be parsed.",
+      );
+    }
+    return this.typeObjToTypedef(defaultEnv);
+  };
+
+  emitZodTypes = (): string => {
+    if (!this.schema || !this.emitTypes)
+      throw new Error(
+        "Could not emit types: no schema or output file specified",
+      );
+
+    const { node } = zodToTs(this.schema, "Environment");
+    return printNode(node);
   };
 
   typeObjToTypedef = (o: unknown): string => {
