@@ -1,6 +1,6 @@
 {
   "name": "@weavedev/jit-env-vite-plugin",
-  "version": "1.0.0-beta.3",
+  "version": "1.1.0",
   "description": "",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
